@@ -2,13 +2,13 @@ const { expect } = require("chai");
 const { formatDate, makeRefObj, formatComments } = require("../db/utils/utils");
 
 describe("formatDate", () => {
-  it("returns the invocation of the new Date() function when passed an array containing one object with a value of 0", () => {
+  it("returns the value of the created_at field in a PSQL rather than UNIX timestamp format when passed an array containing one object with a value of 0", () => {
     const input = [{ created_at: 0 }];
     const actual = formatDate(input);
     const expected = [{ created_at: new Date(0) }];
     expect(actual).to.eql(expected);
   });
-  it("returns the invocation of the new Date() function when passed an array containing one article", () => {
+  it("returns the value of the created_at field in a PSQL rather than UNIX timestamp format when passed an array containing one article", () => {
     const input = [
       {
         created_at: 1471522072389
@@ -16,10 +16,10 @@ describe("formatDate", () => {
     ];
     const actual = formatDate(input);
     const expected = [{ created_at: new Date(1471522072389) }];
-    console.log(input[0].created_at);
+    // console.log(input[0].created_at);
     expect(actual).to.eql(expected);
   });
-  it("returns the invocation of the new Date() function when passed an array containing more than one article", () => {
+  it("returns the value of the created_at field in a PSQL rather than UNIX timestamp format when passed an array containing more than one article", () => {
     const input = [
       {
         title: "Running a Node App",
