@@ -64,6 +64,107 @@ describe("formatDate", () => {
   });
 });
 
-describe("makeRefObj", () => {});
+describe("makeRefObj", () => {
+  it("returns an empty object when passed an empty array", () => {
+    const input = [];
+    const actual = makeRefObj(input);
+    const expected = {};
+    expect(actual).to.eql(expected);
+  });
+  it("returns an object with one article_id when passed an array containing one article object", () => {
+    const input = [{ article_id: 36, title: "The vegan carnivore?" }];
+    const actual = makeRefObj(input);
+    const expected = { "The vegan carnivore?": 36 };
+    expect(actual).to.eql(expected);
+  });
+  it("returns objects with article_ids when passed an array containing multiple article objects", () => {
+    const input = [
+      { article_id: 36, title: "The vegan carnivore?" },
+      { article_id: 35, title: "Stone Soup" }
+    ];
+    const actual = makeRefObj(input);
+    const expected = { "The vegan carnivore?": 36, "Stone Soup": 35 };
+    expect(actual).to.eql(expected);
+  });
+});
 
-describe("formatComments", () => {});
+describe("formatComments", () => {
+  it("produces an empty array when passed an empty array of articles and a lookup reference object", () => {
+    const articles = [];
+    const refObj = {};
+    const actual = formatComments(articles, refObj);
+    const expected = [];
+    expect(actual).to.eql(expected);
+  });
+  it("returns an array with an object which replaces the title property on a single comment with the correct article id, gives the correct date and renames the created_by key to author when passed an array with a single object", () => {
+    const input = [
+      {
+        body:
+          "Itaque quisquam est similique et est perspiciatis reprehenderit voluptatem autem. Voluptatem accusantium eius error adipisci quibusdam doloribus.",
+        belongs_to:
+          "The People Tracking Every Touch, Pass And Tackle in the World Cup",
+        created_by: "tickle122",
+        votes: -1,
+        created_at: 1468087638932
+      }
+    ];
+    const articleRef = {
+      "The People Tracking Every Touch, Pass And Tackle in the World Cup": 18
+    };
+    const actual = formatComments(input, articleRef);
+    const expected = [
+      {
+        body:
+          "Itaque quisquam est similique et est perspiciatis reprehenderit voluptatem autem. Voluptatem accusantium eius error adipisci quibusdam doloribus.",
+        article_id: 18,
+        author: "tickle122",
+        votes: -1,
+        created_at: new Date(1468087638932)
+      }
+    ];
+    expect(actual).to.eql(expected);
+  });
+  it("returns an array of objects which replace the title property on a comment with the correct article id, gives the correct date and renames the created_by key to author when passed an array with multiple objects", () => {
+    const input = [
+      {
+        body:
+          "Itaque quisquam est similique et est perspiciatis reprehenderit voluptatem autem. Voluptatem accusantium eius error adipisci quibusdam doloribus.",
+        belongs_to:
+          "The People Tracking Every Touch, Pass And Tackle in the World Cup",
+        created_by: "tickle122",
+        votes: -1,
+        created_at: 1468087638932
+      },
+      {
+        body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+        belongs_to: "Making sense of Redux",
+        created_by: "grumpy19",
+        votes: 7,
+        created_at: 1478813209256
+      }
+    ];
+    const articleRef = {
+      "The People Tracking Every Touch, Pass And Tackle in the World Cup": 18,
+      "Making sense of Redux": 20
+    };
+    const actual = formatComments(input, articleRef);
+    const expected = [
+      {
+        body:
+          "Itaque quisquam est similique et est perspiciatis reprehenderit voluptatem autem. Voluptatem accusantium eius error adipisci quibusdam doloribus.",
+        article_id: 18,
+        author: "tickle122",
+        votes: -1,
+        created_at: new Date(1468087638932)
+      },
+      {
+        body: "Nobis consequatur animi. Ullam nobis quaerat voluptates veniam.",
+        article_id: 20,
+        author: "grumpy19",
+        votes: 7,
+        created_at: new Date(1478813209256)
+      }
+    ];
+    expect(actual).to.eql(expected);
+  });
+});
