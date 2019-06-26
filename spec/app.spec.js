@@ -3,7 +3,9 @@ const connection = require("../db/connection.js");
 const request = require("supertest");
 const app = require("../app.js");
 const chai = require("chai");
+const chaiSorted = require("chai-sorted");
 const { expect } = chai;
+chai.use(chaiSorted);
 
 describe("/", () => {
   after(() => connection.destroy());
@@ -132,7 +134,7 @@ describe("/", () => {
       });
     });
   });
-  it.only("POST request 201: returns an object with a comment where a user has posted a comment", () => {
+  it("POST request 201: returns an object with a comment where a user has posted a comment", () => {
     return request(app)
       .post("/api/articles/1/comments")
       .send({ username: "butter_bridge", body: "this is my comment" })
@@ -151,5 +153,39 @@ describe("/", () => {
         expect(body.comment.body).to.equal("this is my comment");
         expect(body.comment.comment_id).to.equal(19);
       });
+  });
+  describe("/api", () => {
+    describe("/articles", () => {
+      describe("/:article_id", () => {
+        describe("/comments", () => {
+          it("GET status: 200, when provided a valid article id and returns an array of comments", () => {
+            return request(app)
+              .get("/api/articles/1/comments?sortBy=comment_id")
+              .expect(200)
+              .then(({ body }) => {
+                expect(body).to.be.an("array");
+                expect(body.length).to.equal(13);
+                expect(body[0]).to.contain.keys(
+                  "comment_id",
+                  "article_id",
+                  "author",
+                  "votes",
+                  "created_at",
+                  "body"
+                );
+                expect(body).to.be.ascendingBy("comment_id");
+              });
+          });
+        });
+      });
+      it("GET status:400 when provided with an invalid article id and returns an error message", () => {
+        return request(app)
+          .get("/api/articles/9999/comments")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("No comment found for article id 9999");
+          });
+      });
+    });
   });
 });

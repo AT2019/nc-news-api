@@ -1,4 +1,7 @@
-const { insertCommentToArticle } = require("../models/comments-model.js");
+const {
+  insertCommentToArticle,
+  fetchCommentByArticleId
+} = require("../models/comments-model.js");
 
 const addCommentToArticle = (req, res, next) => {
   const { article_id } = req.params;
@@ -13,4 +16,15 @@ const addCommentToArticle = (req, res, next) => {
     .catch(next);
 };
 
-module.exports = { addCommentToArticle };
+const sendCommentByArticleId = (req, res, next) => {
+  const { article_id } = req.params;
+  const { sort_by } = req.query;
+  fetchCommentByArticleId(article_id, sort_by)
+    .then(comment => {
+      console.log(comment);
+      res.status(200).send(comment);
+    })
+    .catch(next);
+};
+
+module.exports = { addCommentToArticle, sendCommentByArticleId };

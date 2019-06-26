@@ -16,4 +16,23 @@ const insertCommentToArticle = (id, commentUsername, commentBody) => {
     });
 };
 
-module.exports = { insertCommentToArticle };
+const fetchCommentByArticleId = (id, sort_by) => {
+  return connection
+    .select("*")
+    .from("comments")
+    .leftJoin("articles", "articles.article_id", "comments.article_id")
+    .groupBy("comments.comment_id", "articles.article_id")
+    .where("articles.article_id", id)
+    .orderBy(sort_by || "comments.comment_id", "asc")
+    .then(comments => {
+      console.log(comments);
+      if (!comments.length) {
+        return Promise.reject({
+          status: 400,
+          msg: `No comment found for article id ${id}`
+        });
+      } else return comments;
+    });
+};
+
+module.exports = { insertCommentToArticle, fetchCommentByArticleId };
