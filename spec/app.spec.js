@@ -93,7 +93,63 @@ describe("/", () => {
               expect(body.msg).to.equal("No article found for id 9999");
             });
         });
+        it("PATCH status 200: updates the number of votes than an article id has received and serves the correct article object", () => {
+          return request(app)
+            .patch("/api/articles/1")
+            .send({ inc_votes: -100 })
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.article).to.contain.keys(
+                "author",
+                "title",
+                "article_id",
+                "body",
+                "topic",
+                "created_at",
+                "votes"
+              );
+              expect(body.article.votes).to.equal(0);
+            });
+        });
+        it("PATCH status:400 when not provided with an inc_votes object and returns an error message", () => {
+          return request(app)
+            .patch("/api/articles/1")
+            .send({})
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal("Bad request");
+            });
+        });
+        // it("PATCH status:400 when not provided with an inc_votes object that has invalid content and returns an error message", () => {
+        //   return request(app)
+        //     .patch("/api/articles/1")
+        //     .send({ inc_votes: "cat" })
+        //     .expect(400)
+        //     .then(({ body }) => {
+        //       expect(body.msg).to.equal("Bad request");
+        //     });
+        // });
       });
     });
+  });
+  it.only("POST request 201: returns an object with a comment where a user has posted a comment", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({ username: "butter_bridge", body: "this is my comment" })
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment).to.contain.keys(
+          "comment_id",
+          "author",
+          "article_id",
+          "votes",
+          "created_at",
+          "body"
+        );
+        expect(body.comment.article_id).to.equal(1);
+        expect(body.comment.author).to.equal("butter_bridge");
+        expect(body.comment.body).to.equal("this is my comment");
+        expect(body.comment.comment_id).to.equal(19);
+      });
   });
 });
