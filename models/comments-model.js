@@ -35,13 +35,30 @@ const fetchCommentByArticleId = (id, sort_by) => {
     });
 };
 
+const changeCommentById = (comment_id, votes) => {
+  return connection("comments")
+    .where("comments.comment_id", comment_id)
+    .increment("votes", votes)
+    .returning("*")
+    .then(comment => {
+      //   console.log(comment);
+      if (!votes) {
+        return Promise.reject({
+          status: 400,
+          msg: `Bad request`
+        });
+      }
+      return comment[0];
+    });
+};
+
 const removeCommentById = comment_id => {
   return connection
     .delete()
     .from("comments")
     .where("comment_id", comment_id)
     .then(deleteCount => {
-      console.log(deleteCount);
+      //   console.log(deleteCount);
       if (!deleteCount) {
         return Promise.reject({
           status: 404,
@@ -54,5 +71,6 @@ const removeCommentById = comment_id => {
 module.exports = {
   insertCommentToArticle,
   fetchCommentByArticleId,
+  changeCommentById,
   removeCommentById
 };

@@ -77,7 +77,7 @@ describe("/", () => {
           const invalidMethods = ["delete", "patch", "put"];
           const methodPromises = invalidMethods.map(method => {
             return request(app)
-              [method]("/api/users/:username")
+              [method]("/api/users/butter_bridge")
               .expect(405)
               .then(({ body }) => {
                 expect(body.msg).to.equal("Method not allowed");
@@ -160,7 +160,7 @@ describe("/", () => {
           const invalidMethods = ["post"];
           const methodPromises = invalidMethods.map(method => {
             return request(app)
-              [method]("/api/articles/:article_id")
+              [method]("/api/articles/1")
               .expect(405)
               .then(({ body }) => {
                 expect(body.msg).to.equal("Method not allowed");
@@ -203,7 +203,7 @@ describe("/", () => {
             const invalidMethods = ["delete", "patch", "put"];
             const methodPromises = invalidMethods.map(method => {
               return request(app)
-                [method]("/api/articles/:article_id/comments")
+                [method]("/api/articles/1/comments")
                 .expect(405)
                 .then(({ body }) => {
                   expect(body.msg).to.equal("Method not allowed");
@@ -257,6 +257,50 @@ describe("/", () => {
     });
   });
 
+  describe("/api", () => {
+    describe("/comments", () => {
+      describe("/:comment_id", () => {
+        it("PATCH status 200: updates the number of votes than comments has received and returns the correct comment object", () => {
+          return request(app)
+            .patch("/api/comments/1")
+            .send({ inc_votes: 2 })
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.comment).to.contain.keys(
+                "comment_id",
+                "votes",
+                "created_at",
+                "author",
+                "body"
+              );
+              expect(body.comment.votes).to.equal(18);
+            });
+        });
+        it("PATCH status:400 when not provided with an inc_votes object and returns an error message", () => {
+          return request(app)
+            .patch("/api/comments/1")
+            .send({})
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal("Bad request");
+            });
+        });
+        it("INVALID METHOD status: 405", () => {
+          const invalidMethods = ["post"];
+          const methodPromises = invalidMethods.map(method => {
+            return request(app)
+              [method]("/api/comments/1")
+              .expect(405)
+              .then(({ body }) => {
+                expect(body.msg).to.equal("Method not allowed");
+              });
+          });
+          return Promise.all(methodPromises);
+        });
+      });
+    });
+  });
+
   describe("/comments", () => {
     describe("/:comment_id", () => {
       it("DELETE status: 204 when provided a valid comment_id", () => {
@@ -273,7 +317,7 @@ describe("/", () => {
           });
       });
       it("INVALID METHOD status: 405", () => {
-        const invalidMethods = ["patch", "put", "post"];
+        const invalidMethods = ["post"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/comments/1")

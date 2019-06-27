@@ -11,8 +11,8 @@ const send405 = (req, res, next) => {
 
 commentsRouter
   .route("/:comment_id")
-  .delete(deleteCommentById)
   .patch(updateCommentById)
+  .delete(deleteCommentById)
   .all(send405);
 
 module.exports = commentsRouter;
