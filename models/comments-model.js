@@ -1,6 +1,7 @@
 const connection = require("../db/connection.js");
 
 const insertCommentToArticle = (id, commentUsername, commentBody) => {
+  console.log(id);
   return connection
     .insert({
       author: commentUsername,
@@ -35,20 +36,25 @@ const fetchCommentByArticleId = (id, sort_by) => {
     });
 };
 
-const changeCommentById = (comment_id, votes) => {
+const changeCommentById = (comment_id, votes, obj) => {
   return connection("comments")
     .where("comments.comment_id", comment_id)
     .increment("votes", votes)
     .returning("*")
     .then(comment => {
-      //   console.log(comment);
-      if (!votes) {
+      if (Object.keys(obj).length !== 1) {
         return Promise.reject({
           status: 400,
-          msg: `Bad request`
+          msg: "Bad request"
         });
-      }
-      return comment[0];
+      } else if (obj.hasOwnProperty("inc_votes") === false) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      } else if (!votes) {
+        return Promise.reject({
+          status: 404,
+          msg: `Comment with id ${comment_id} not found`
+        });
+      } else return comment[0];
     });
 };
 

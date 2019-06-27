@@ -33,9 +33,13 @@ const updateCommentById = (req, res, next) => {
   const { comment_id } = req.params;
   //   console.log(req.body.inc_votes, "<-- console.log votes");
   const votes = req.body.inc_votes;
+  const obj = req.body;
+  // console.log(req.body);
+  // console.log(Object.keys(req.body));
+  // console.log(Object.keys(req.body).length);
   //   console.log(typeof votes);
   //   console.log(comment_id);
-  changeCommentById(comment_id, votes)
+  changeCommentById(comment_id, votes, obj)
     .then(comment => {
       res.status(200).send({ comment });
     })

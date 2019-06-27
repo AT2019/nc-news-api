@@ -27,22 +27,21 @@ describe("/", () => {
           .get("/api/topics")
           .expect(200)
           .then(({ body }) => {
-            console.log(body);
             expect(body.topics[0]).to.contain.keys("slug", "description");
           });
       });
-    });
-    it("INVALID METHOD status: 405", () => {
-      const invalidMethods = ["delete", "patch", "put"];
-      const methodPromises = invalidMethods.map(method => {
-        return request(app)
-          [method]("/api/topics")
-          .expect(405)
-          .then(({ body }) => {
-            expect(body.msg).to.equal("Method not allowed");
-          });
+      it("INVALID METHOD status: 405", () => {
+        const invalidMethods = ["delete", "patch", "put"];
+        const methodPromises = invalidMethods.map(method => {
+          return request(app)
+            [method]("/api/topics")
+            .expect(405)
+            .then(({ body }) => {
+              expect(body.msg).to.equal("Method not allowed");
+            });
+        });
+        return Promise.all(methodPromises);
       });
-      return Promise.all(methodPromises);
     });
   });
 
@@ -54,7 +53,6 @@ describe("/", () => {
             .get("/api/users/butter_bridge")
             .expect(200)
             .then(({ body }) => {
-              console.log(body);
               expect(body.user).to.contain.keys(
                 "username",
                 "avatar_url",
@@ -114,48 +112,20 @@ describe("/", () => {
         });
         it("GET status:400 when provided with an invalid article id and returns an error message", () => {
           return request(app)
-            .get("/api/articles/9999")
-            .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).to.equal("No article found for id 9999");
-            });
-        });
-        it("PATCH status 200: updates the number of votes than an article id has received and serves the correct article object", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send({ inc_votes: -100 })
-            .expect(200)
-            .then(({ body }) => {
-              expect(body.article).to.contain.keys(
-                "author",
-                "title",
-                "article_id",
-                "body",
-                "topic",
-                "created_at",
-                "votes"
-              );
-              expect(body.article.votes).to.equal(0);
-            });
-        });
-        it("PATCH status:400 when not provided with an inc_votes object and returns an error message", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send({})
+            .get("/api/articles/not-a-valid-route")
             .expect(400)
             .then(({ body }) => {
               expect(body.msg).to.equal("Bad request");
             });
         });
-        // it("PATCH status:400 when not provided with an inc_votes object that has invalid content and returns an error message", () => {
-        //   return request(app)
-        //     .patch("/api/articles/1")
-        //     .send({ inc_votes: "cat" })
-        //     .expect(400)
-        //     .then(({ body }) => {
-        //       expect(body.msg).to.equal("Bad request");
-        //     });
-        // });
+        it("GET status: 404 if we try to get a valid, but non-existent, comment id", () => {
+          return request(app)
+            .get("/api/articles/9999")
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.equal("No article found for id 9999");
+            });
+        });
         it("INVALID METHOD status: 405", () => {
           const invalidMethods = ["post"];
           const methodPromises = invalidMethods.map(method => {
@@ -169,82 +139,268 @@ describe("/", () => {
           return Promise.all(methodPromises);
         });
       });
-    });
-  });
+      describe("/articles", () => {
+        describe("/:article_id", () => {
+          describe("/comments", () => {
+            it("POST request 201: returns an object with a comment where a user has posted a comment", () => {
+              return request(app)
+                .post("/api/articles/1/comments")
+                .send({
+                  username: "butter_bridge",
+                  body: "this is my comment"
+                })
+                .expect(201)
+                .then(({ body }) => {
+                  expect(body.comment).to.contain.keys(
+                    "comment_id",
+                    "author",
+                    "article_id",
+                    "votes",
+                    "created_at",
+                    "body"
+                  );
+                  expect(body.comment.article_id).to.equal(1);
+                  expect(body.comment.author).to.equal("butter_bridge");
+                  expect(body.comment.body).to.equal("this is my comment");
+                  expect(body.comment.comment_id).to.equal(19);
+                });
+            });
+            it("POST status: 400 if we try to post something to an article which does not have a valid id", () => {
+              return request(app)
+                .post("/api/articles/not-a-valid-id/comments")
+                .expect(400)
+                .then(({ body }) => {
+                  expect(body.msg).to.equal("Bad request");
+                });
+            });
+            // it.only("POST status: 404 if we try to post an article to a valid, but non-existent, article id", () => {
+            //   return request(app)
+            //     .post("/api/articles/9999/comments")
+            //     .expect(404)
+            //     .then(({ body }) => {
+            //       expect(body.msg).to.equal("Article with id 9999 not found");
+            //     });
+            // });
+            it("INVALID METHOD status: 405", () => {
+              const invalidMethods = ["delete", "patch", "put"];
+              const methodPromises = invalidMethods.map(method => {
+                return request(app)
+                  [method]("/api/articles/1/comments")
+                  .expect(405)
+                  .then(({ body }) => {
+                    expect(body.msg).to.equal("Method not allowed");
+                  });
+              });
+              return Promise.all(methodPromises);
+            });
+          });
+        });
+      });
 
-  describe("/api", () => {
-    describe("/articles", () => {
-      describe("/:article_id", () => {
-        describe("/comments", () => {
-          it("POST request 201: returns an object with a comment where a user has posted a comment", () => {
+      describe("/api", () => {
+        describe("/articles", () => {
+          describe("/:article_id", () => {
+            it("PATCH status 200: updates the number of votes than an article id has received and serves the correct article object", () => {
+              return request(app)
+                .patch("/api/articles/1")
+                .send({ inc_votes: -100 })
+                .expect(200)
+                .then(({ body }) => {
+                  expect(body.article).to.contain.keys(
+                    "author",
+                    "title",
+                    "article_id",
+                    "body",
+                    "topic",
+                    "created_at",
+                    "votes"
+                  );
+                  expect(body.article.votes).to.equal(0);
+                });
+            });
+            it("PATCH status:400 when not provided with an inc_votes object and returns an error message", () => {
+              return request(app)
+                .patch("/api/articles/not-a-valid-id")
+                .send({})
+                .expect(400)
+                .then(({ body }) => {
+                  expect(body.msg).to.equal("Bad request");
+                });
+            });
+            it("PATCH status: 404 if we try to patch a valid, but non-existent, comment id", () => {
+              return request(app)
+                .patch("/api/articles/9999")
+                .expect(404)
+                .then(({ body }) => {
+                  expect(body.msg).to.equal("Comment with id 9999 not found");
+                });
+            });
+            it("PATCH status:400 when not provided with an inc_votes object that has invalid content and returns an error message", () => {
+              return request(app)
+                .patch("/api/articles/1")
+                .send({ inc_votes: "cat" })
+                .expect(400)
+                .then(({ body }) => {
+                  console.log(body.msg);
+                  expect(body.msg).to.equal("Bad request");
+                });
+            });
+            it("INVALID METHOD status: 405", () => {
+              const invalidMethods = ["post"];
+              const methodPromises = invalidMethods.map(method => {
+                return request(app)
+                  [method]("/api/articles/1")
+                  .expect(405)
+                  .then(({ body }) => {
+                    expect(body.msg).to.equal("Method not allowed");
+                  });
+              });
+              return Promise.all(methodPromises);
+            });
+          });
+        });
+      });
+    });
+
+    describe("/api", () => {
+      describe("/articles", () => {
+        describe("/:article_id", () => {
+          describe("/comments", () => {
+            it("GET status: 200, when provided a valid article id and returns an array of comments", () => {
+              return request(app)
+                .get("/api/articles/1/comments?sortBy=comment_id")
+                .expect(200)
+                .then(({ body }) => {
+                  expect(body).to.be.an("array");
+                  expect(body.length).to.equal(13);
+                  expect(body[0]).to.contain.keys(
+                    "comment_id",
+                    "article_id",
+                    "author",
+                    "votes",
+                    "created_at",
+                    "body"
+                  );
+                  expect(body).to.be.ascendingBy("comment_id");
+                });
+            });
+            it("GET status:400 when provided with an invalid article id and returns an error message", () => {
+              return request(app)
+                .get("/api/articles/9999/comments")
+                .expect(400)
+                .then(({ body }) => {
+                  expect(body.msg).to.equal(
+                    "No comment found for article id 9999"
+                  );
+                });
+            });
+            it("INVALID METHOD status: 405", () => {
+              console.log("testing...");
+              const invalidMethods = ["delete", "patch", "put"];
+              const methodPromises = invalidMethods.map(method => {
+                return request(app)
+                  [method]("/api/articles/1/comments")
+                  .expect(405)
+                  .then(({ body }) => {
+                    expect(body.msg).to.equal("Method not allowed");
+                  });
+              });
+              return Promise.all(methodPromises);
+            });
+          });
+        });
+      });
+    });
+    describe("/api", () => {
+      describe("/articles", () => {
+        it("GET status 200: returns an array of article objects", () => {
+          return request(app)
+            .get("/api/articles?sort_by=created_at")
+            .expect(200)
+            .then(({ body }) => {
+              console.log(body, "<-- spec console.log");
+              expect(body[0]).to.contain.keys(
+                "author",
+                "title",
+                "article_id",
+                "topic",
+                "created_at",
+                "votes",
+                "comment_count"
+              );
+              expect(body).to.be.descendingBy("created_at");
+            });
+        });
+      });
+    });
+
+    describe("/api", () => {
+      describe("/comments", () => {
+        describe("/:comment_id", () => {
+          it("PATCH status 200: updates the number of votes than comments has received and returns the correct comment object", () => {
             return request(app)
-              .post("/api/articles/1/comments")
-              .send({
-                username: "butter_bridge",
-                body: "this is my comment"
-              })
-              .expect(201)
+              .patch("/api/comments/1")
+              .send({ inc_votes: 2 })
+              .expect(200)
               .then(({ body }) => {
                 expect(body.comment).to.contain.keys(
                   "comment_id",
-                  "author",
-                  "article_id",
                   "votes",
                   "created_at",
-                  "body"
-                );
-                expect(body.comment.article_id).to.equal(1);
-                expect(body.comment.author).to.equal("butter_bridge");
-                expect(body.comment.body).to.equal("this is my comment");
-                expect(body.comment.comment_id).to.equal(19);
-              });
-          });
-          it("INVALID METHOD status: 405", () => {
-            const invalidMethods = ["delete", "patch", "put"];
-            const methodPromises = invalidMethods.map(method => {
-              return request(app)
-                [method]("/api/articles/1/comments")
-                .expect(405)
-                .then(({ body }) => {
-                  expect(body.msg).to.equal("Method not allowed");
-                });
-            });
-            return Promise.all(methodPromises);
-          });
-          it("GET status: 200, when provided a valid article id and returns an array of comments", () => {
-            return request(app)
-              .get("/api/articles/1/comments?sortBy=comment_id")
-              .expect(200)
-              .then(({ body }) => {
-                expect(body).to.be.an("array");
-                expect(body.length).to.equal(13);
-                expect(body[0]).to.contain.keys(
-                  "comment_id",
-                  "article_id",
                   "author",
-                  "votes",
-                  "created_at",
                   "body"
                 );
-                expect(body).to.be.ascendingBy("comment_id");
+                expect(body.comment.votes).to.equal(18);
               });
           });
-          it("GET status:400 when provided with an invalid article id and returns an error message", () => {
+          it("PATCH status: 400 if we try to patch something which does not have a valid comment id", () => {
             return request(app)
-              .get("/api/articles/9999/comments")
+              .patch("/api/comments/not-a-valid-comment-id")
               .expect(400)
               .then(({ body }) => {
-                expect(body.msg).to.equal(
-                  "No comment found for article id 9999"
-                );
+                expect(body.msg).to.equal("Bad request");
+              });
+          });
+          it("PATCH status: 400 if we try to patch something where the object has additional keys", () => {
+            return request(app)
+              .patch("/api/comments/1")
+              .send({ inc_votes: 2, name: "Anke" })
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal("Bad request");
+              });
+          });
+          it("PATCH status: 400 if we try to patch something where the object has an invalid key", () => {
+            return request(app)
+              .patch("/api/comments/1")
+              .send({ bad_key: 2 })
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal("Bad request");
+              });
+          });
+          it("PATCH status: 400 if we try to patch something where the object has an invalid value", () => {
+            return request(app)
+              .patch("/api/comments/1")
+              .send({ inc_votes: "cat" })
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal("Bad request");
+              });
+          });
+          it("PATCH status: 404 if we try to patch a valid, but non-existent, comment id", () => {
+            return request(app)
+              .delete("/api/comments/9999")
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).to.equal("Comment with id 9999 not found");
               });
           });
           it("INVALID METHOD status: 405", () => {
-            console.log("testing...");
-            const invalidMethods = ["delete", "patch", "put"];
+            const invalidMethods = ["post"];
             const methodPromises = invalidMethods.map(method => {
               return request(app)
-                [method]("/api/articles/1/comments")
+                [method]("/api/comments/1")
                 .expect(405)
                 .then(({ body }) => {
                   expect(body.msg).to.equal("Method not allowed");
@@ -255,56 +411,28 @@ describe("/", () => {
         });
       });
     });
-  });
-  describe("/api", () => {
-    describe("/articles", () => {
-      it("GET status 200: returns an array of article objects", () => {
-        return request(app)
-          .get("/api/articles?sort_by=created_at")
-          .expect(200)
-          .then(({ body }) => {
-            console.log(body, "<-- spec console.log");
-            expect(body[0]).to.contain.keys(
-              "author",
-              "title",
-              "article_id",
-              "topic",
-              "created_at",
-              "votes",
-              "comment_count"
-            );
-            expect(body).to.be.descendingBy("created_at");
-          });
-      });
-    });
-  });
 
-  describe("/api", () => {
     describe("/comments", () => {
       describe("/:comment_id", () => {
-        it("PATCH status 200: updates the number of votes than comments has received and returns the correct comment object", () => {
+        it("DELETE status: 204 when provided a valid comment_id", () => {
           return request(app)
-            .patch("/api/comments/1")
-            .send({ inc_votes: 2 })
-            .expect(200)
-            .then(({ body }) => {
-              expect(body.comment).to.contain.keys(
-                "comment_id",
-                "votes",
-                "created_at",
-                "author",
-                "body"
-              );
-              expect(body.comment.votes).to.equal(18);
-            });
+            .delete("/api/comments/1")
+            .expect(204);
         });
-        it("PATCH status:400 when not provided with an inc_votes object and returns an error message", () => {
+        it("DELETE status: 400 if we try to delete something which does not have a valid id", () => {
           return request(app)
-            .patch("/api/comments/1")
-            .send({})
+            .delete("/api/comments/not-a-valid-id")
             .expect(400)
             .then(({ body }) => {
               expect(body.msg).to.equal("Bad request");
+            });
+        });
+        it("DELETE status: 404 if we try to delete a valid, but non-existent, comment id", () => {
+          return request(app)
+            .delete("/api/comments/9999")
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.equal("Comment with id 9999 not found");
             });
         });
         it("INVALID METHOD status: 405", () => {
@@ -319,44 +447,6 @@ describe("/", () => {
           });
           return Promise.all(methodPromises);
         });
-      });
-    });
-  });
-
-  describe("/comments", () => {
-    describe("/:comment_id", () => {
-      it("DELETE status: 204 when provided a valid comment_id", () => {
-        return request(app)
-          .delete("/api/comments/1")
-          .expect(204);
-      });
-      it("DELETE status: 400 if we try to delete something which does not have a valid id", () => {
-        return request(app)
-          .delete("/api/comments/not-a-valid-id")
-          .expect(400)
-          .then(({ body }) => {
-            expect(body.msg).to.equal("Bad request");
-          });
-      });
-      it("DELETE status: 404 if we try to delete a valid, but non-existent, comment id", () => {
-        return request(app)
-          .delete("/api/comments/9999")
-          .expect(404)
-          .then(({ body }) => {
-            expect(body.msg).to.equal("Comment with id 9999 not found");
-          });
-      });
-      it("INVALID METHOD status: 405", () => {
-        const invalidMethods = ["post"];
-        const methodPromises = invalidMethods.map(method => {
-          return request(app)
-            [method]("/api/comments/1")
-            .expect(405)
-            .then(({ body }) => {
-              expect(body.msg).to.equal("Method not allowed");
-            });
-        });
-        return Promise.all(methodPromises);
       });
     });
   });
