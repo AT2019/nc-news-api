@@ -256,6 +256,28 @@ describe("/", () => {
       });
     });
   });
+  describe("/api", () => {
+    describe("/articles", () => {
+      it("GET status 200: returns an array of article objects", () => {
+        return request(app)
+          .get("/api/articles?sort_by=created_at")
+          .expect(200)
+          .then(({ body }) => {
+            console.log(body, "<-- spec console.log");
+            expect(body[0]).to.contain.keys(
+              "author",
+              "title",
+              "article_id",
+              "topic",
+              "created_at",
+              "votes",
+              "comment_count"
+            );
+            expect(body).to.be.descendingBy("created_at");
+          });
+      });
+    });
+  });
 
   describe("/api", () => {
     describe("/comments", () => {
@@ -308,7 +330,15 @@ describe("/", () => {
           .delete("/api/comments/1")
           .expect(204);
       });
-      it("DELETE status: 404 if we try to delete something which has already been deleted", () => {
+      it("DELETE status: 400 if we try to delete something which does not have a valid id", () => {
+        return request(app)
+          .delete("/api/comments/not-a-valid-id")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad request");
+          });
+      });
+      it("DELETE status: 404 if we try to delete a valid, but non-existent, comment id", () => {
         return request(app)
           .delete("/api/comments/9999")
           .expect(404)

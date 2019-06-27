@@ -23,7 +23,7 @@ const fetchCommentByArticleId = (id, sort_by) => {
     .leftJoin("articles", "articles.article_id", "comments.article_id")
     .groupBy("comments.comment_id", "articles.article_id")
     .where("articles.article_id", id)
-    .orderBy(sort_by || "comments.comment_id", "asc")
+    .orderBy(sort_by || "comments.created_at", "desc")
     .then(comments => {
       //   console.log(comments);
       if (!comments.length) {
@@ -58,7 +58,6 @@ const removeCommentById = comment_id => {
     .from("comments")
     .where("comment_id", comment_id)
     .then(deleteCount => {
-      //   console.log(deleteCount);
       if (!deleteCount) {
         return Promise.reject({
           status: 404,
