@@ -1,7 +1,11 @@
 const connection = require("../db/connection.js");
 
-const insertCommentToArticle = (id, commentUsername, commentBody) => {
-  console.log(id);
+const insertCommentToArticle = (
+  id,
+  commentUsername,
+  commentBody,
+  commentObj
+) => {
   return connection
     .insert({
       author: commentUsername,
@@ -12,7 +16,20 @@ const insertCommentToArticle = (id, commentUsername, commentBody) => {
     .where("articles.article_id", id)
     .returning("*")
     .then(comment => {
-      //   console.log(comment[0]);
+      if (Object.keys(commentObj).length !== 2) {
+        return Promise.reject({
+          status: 400,
+          msg: "Bad request"
+        });
+      } else if (commentObj.hasOwnProperty("username") === false) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      } else if (commentObj.hasOwnProperty("body") === false) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      } else if (commentBody.length === 0) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      } else if (commentBody.length === 0) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      }
       return comment[0];
     });
 };
@@ -49,7 +66,7 @@ const changeCommentById = (comment_id, votes, obj) => {
         });
       } else if (obj.hasOwnProperty("inc_votes") === false) {
         return Promise.reject({ status: 400, msg: "Bad request" });
-      } else if (!votes) {
+      } else if (!comment) {
         return Promise.reject({
           status: 404,
           msg: `Comment with id ${comment_id} not found`

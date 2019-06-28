@@ -7,13 +7,14 @@ const {
 
 const addCommentToArticle = (req, res, next) => {
   const { article_id } = req.params;
-  const comment = req.body;
+  // console.log(req.params);
+  const commentObj = req.body;
   const commentUsername = req.body.username;
   const commentBody = req.body.body;
-  //   console.log(comment);
+  // console.log(commentObj);
   //   console.log(commentUsername);
-  //   console.log(commentBody);
-  insertCommentToArticle(article_id, commentUsername, commentBody)
+  // console.log(commentBody);
+  insertCommentToArticle(article_id, commentUsername, commentBody, commentObj)
     .then(comment => res.status(201).send({ comment: comment }))
     .catch(next);
 };
