@@ -43,13 +43,13 @@ const fetchCommentByArticleId = (id, sort_by) => {
     .where("articles.article_id", id)
     .orderBy(sort_by || "comments.created_at", "desc")
     .then(comments => {
-      //   console.log(comments);
-      if (!comments.length) {
+      if (!Number(id)) {
         return Promise.reject({
           status: 400,
-          msg: `No comment found for article id ${id}`
+          msg: "Bad request"
         });
-      } else return comments;
+      }
+      return comments;
     });
 };
 
