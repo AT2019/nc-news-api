@@ -78,14 +78,4 @@ const fetchArticles = (
     });
 };
 
-const checkExists = (value, table, column) => {
-  return connection
-    .select("*")
-    .from(table)
-    .where(column, value)
-    .then(rows => {
-      return rows.length !== 0;
-    });
-};
-
 module.exports = { fetchArticleById, changeArticleById, fetchArticles };
