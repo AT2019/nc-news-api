@@ -25,7 +25,7 @@ exports.formatComments = (commentData, articleRef) => {
   return commentData.map(comment => {
     const { belongs_to, ...restOfComment } = comment;
     const article_id = articleRef[belongs_to];
-    console.log({ article_id, ...restOfComment });
+    // console.log({ article_id, ...restOfComment });
     return { article_id, ...restOfComment };
   });
 };

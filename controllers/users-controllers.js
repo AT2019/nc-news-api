@@ -1,7 +1,7 @@
 const { fetchUserByUsername } = require("../models/users-model.js");
 
 const sendUserByUsername = (req, res, next) => {
-  console.log(req.params, "<-- from users controllers");
+  // console.log(req.params, "<-- from users controllers");
   const { username } = req.params;
   fetchUserByUsername(username)
     .then(user => {

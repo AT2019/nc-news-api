@@ -6,8 +6,6 @@ const fetchUserByUsername = username => {
     .from("users")
     .where("username", username)
     .then(user => {
-      console.log(user, "<-- res console log");
-      console.log(user.length);
       if (!user.length) {
         return Promise.reject({
           status: 400,

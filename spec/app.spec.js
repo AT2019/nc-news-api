@@ -6,6 +6,7 @@ const chai = require("chai");
 const chaiSorted = require("chai-sorted");
 const { expect } = chai;
 chai.use(chaiSorted);
+const endpointsJSON = require("../endpoints.json");
 
 describe("/", () => {
   after(() => connection.destroy());
@@ -139,7 +140,7 @@ describe("/", () => {
         });
       });
       describe("/:article_id", () => {
-        describe.only("/comments", () => {
+        describe("/comments", () => {
           it("POST request 201: returns an object with a comment where a user has posted a comment", () => {
             return request(app)
               .post("/api/articles/1/comments")
@@ -280,7 +281,7 @@ describe("/", () => {
               .patch("/api/articles/9999")
               .expect(404)
               .then(({ body }) => {
-                expect(body.msg).to.equal("Article with id 9999 not found");
+                expect(body.msg).to.equal("Article not found");
               });
           });
           it("PATCH status:400 when not provided with an inc_votes object that has invalid content and returns an error message", () => {
@@ -349,14 +350,12 @@ describe("/", () => {
                 expect(body).to.be.ascendingBy("comment_id");
               });
           });
-          it("GET status:400 when provided with an invalid article id and returns an error message", () => {
+          it("GET status: 400 if we try to get a comment for an invalid article id", () => {
             return request(app)
-              .get("/api/articles/9999/comments")
+              .get("/api/articles/not-a-valid-id/comments")
               .expect(400)
               .then(({ body }) => {
-                expect(body.msg).to.equal(
-                  "No comment found for article id 9999"
-                );
+                expect(body.msg).to.equal("Bad request");
               });
           });
           it("INVALID METHOD status: 405", () => {
@@ -396,6 +395,27 @@ describe("/", () => {
             expect(body).to.be.descendingBy("created_at");
           });
       });
+      it("INVALID METHOD status: 405", () => {
+        console.log("testing...");
+        const invalidMethods = ["delete", "patch", "put"];
+        const methodPromises = invalidMethods.map(method => {
+          return request(app)
+            [method]("/api/articles/1/comments")
+            .expect(405)
+            .then(({ body }) => {
+              expect(body.msg).to.equal("Method not allowed");
+            });
+        });
+        return Promise.all(methodPromises);
+      });
+      // it("GET status: 404 if we try to get a comment for an author who does not exist", () => {
+      //   return request(app)
+      //     .get("/api/articles/3/comments")
+      //     .expect(404)
+      //     .then(({ body }) => {
+      //       expect(body.msg).to.equal("Author not found");
+      //     });
+      // });
     });
   });
 

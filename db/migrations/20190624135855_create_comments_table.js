@@ -4,7 +4,7 @@ exports.up = function(connection, Promise) {
     commentsTable.string("author").references("users.username");
     commentsTable.integer("article_id").references("articles.article_id");
     commentsTable.integer("votes").defaultsTo(0);
-    commentsTable.timestamp("created_at");
+    commentsTable.timestamp("created_at").defaultTo(connection.fn.now());
     commentsTable.text("body");
   });
 };
