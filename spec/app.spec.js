@@ -376,14 +376,13 @@ describe("/", () => {
     });
   });
   describe("/api", () => {
-    describe("/articles", () => {
+    describe.only("/articles", () => {
       it("GET status 200: returns an array of article objects", () => {
         return request(app)
           .get("/api/articles?sort_by=created_at")
           .expect(200)
           .then(({ body }) => {
-            console.log(body, "<-- spec console.log");
-            expect(body[0]).to.contain.keys(
+            expect(body.articles[0]).to.contain.keys(
               "author",
               "title",
               "article_id",
@@ -392,11 +391,10 @@ describe("/", () => {
               "votes",
               "comment_count"
             );
-            expect(body).to.be.descendingBy("created_at");
+            expect(body.articles).to.be.descendingBy("created_at");
           });
       });
       it("INVALID METHOD status: 405", () => {
-        console.log("testing...");
         const invalidMethods = ["delete", "patch", "put"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
