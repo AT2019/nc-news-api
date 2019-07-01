@@ -4,7 +4,17 @@ const usersRouter = require("./users-router.js");
 const articlesRouter = require("./articles-router.js");
 const commentsRouter = require("./comments-router.js");
 
-apiRouter.route("/").get(() => console.log("at api"));
+const send405 = (req, res) => {
+  res.status(405).send({ msg: "Method not allowed" });
+
+  apiRouter
+    .route("/")
+    .get((req, res) => {
+      res.status(200).send(json);
+    })
+    .all(send405);
+};
+
 apiRouter.use("/topics", topicsRouter);
 apiRouter.use("/users", usersRouter);
 apiRouter.use("/articles", articlesRouter);

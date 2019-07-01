@@ -9,7 +9,6 @@ const fetchArticleById = id => {
     .groupBy("articles.article_id")
     .where("articles.article_id", id)
     .then(article => {
-      console.log(article[0]);
       if (!article.length) {
         return Promise.reject({
           status: 404,
@@ -19,30 +18,45 @@ const fetchArticleById = id => {
     });
 };
 
-const changeArticleById = (id, votes, obj) => {
+const changeArticleById = (id, votes = 0, obj) => {
   return connection("articles")
     .where("articles.article_id", id)
     .increment("votes", votes)
     .returning("*")
     .then(article => {
-      if (!article.length) {
+      if (Object.keys(obj).length === 0 && !article.length === false) {
+        return article[0];
+      }
+      if (!article.length === true) {
         return Promise.reject({ status: 404, msg: "Article not found" });
       } else if (Object.keys(obj).length !== 1) {
         return Promise.reject({
           status: 400,
           msg: "Bad request"
         });
-      } else if (obj.hasOwnProperty("inc_votes") === false) {
+      } else if (
+        Object.keys(obj).length >= 1 &&
+        obj.hasOwnProperty("inc_votes") === false
+      ) {
         return Promise.reject({ status: 400, msg: "Bad request" });
       }
-      // console.log(article[0]);
       return article[0];
+    });
+};
+
+const checkExists = (value, table, column) => {
+  return connection
+    .select("*")
+    .from(table)
+    .where(column, value)
+    .then(rows => {
+      return rows.length !== 0;
     });
 };
 
 const fetchArticles = (
   sort_by = "created_at",
-  query = "desc",
+  order = "desc",
   author,
   topic
 ) => {
@@ -57,24 +71,34 @@ const fetchArticles = (
     )
     .from("articles")
     .count({ comment_count: "comment_id" })
-    .join("comments", "comments.article_id", "=", "articles.article_id")
+    .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
     .groupBy("articles.article_id")
-    .orderBy(sort_by || "articles.created_at", "desc")
+    .orderBy(sort_by || "articles.created_at", order)
     .modify(function(queryBuilder) {
       if (author && topic) {
         queryBuilder.where("articles.author", author);
       } else if (author) {
-        queryBuilder.where("articles.author", "author");
+        queryBuilder.where("articles.author", author);
       } else if (topic) {
-        queryBuider.where("articles.topic", topic);
+        queryBuilder.where("articles.topic", topic);
       }
     })
     .then(articles => {
+      const authorExist = author
+        ? checkExists(author, "users", "username")
+        : null;
+      const topicExist = topic ? checkExists(topic, "topics", "slug") : null;
+      return Promise.all([authorExist, topicExist, articles]);
+    })
+    .then(([authorExist, topicExist, articles]) => {
+      if (authorExist === false) {
+        return Promise.reject({ status: 404, msg: "Author not found" });
+      } else if (topicExist === false) {
+        return Promise.reject({ status: 404, msg: "Topic not found" });
+      }
       if (!articles) {
         return Promise.reject({ status: 404, msg: "Article not found" });
-      }
-      // console.log(articles);
-      else return articles;
+      } else return articles;
     });
 };
 

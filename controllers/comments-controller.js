@@ -7,39 +7,40 @@ const {
 
 const addCommentToArticle = (req, res, next) => {
   const { article_id } = req.params;
-  // console.log(req.params);
   const commentObj = req.body;
-  const commentUsername = req.body.username;
-  const commentBody = req.body.body;
-  // console.log(commentObj);
-  //   console.log(commentUsername);
-  // console.log(commentBody);
-  insertCommentToArticle(article_id, commentUsername, commentBody, commentObj)
+  insertCommentToArticle(article_id, commentObj)
     .then(comment => res.status(201).send({ comment: comment }))
     .catch(next);
 };
 
 const sendCommentByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-  const { sort_by } = req.query;
-  fetchCommentByArticleId(article_id, sort_by)
-    .then(comment => {
-      //   console.log(comment);
-      res.status(200).send(comment);
-    })
-    .catch(next);
+  const { sort_by, order } = req.query;
+  const correctOrder = ["asc", "desc"].includes(order);
+  const correctSort_by = [
+    "comment_id",
+    "body",
+    "votes",
+    "created_at",
+    "author"
+  ].includes(sort_by);
+  if (order && !correctOrder) {
+    next({ status: 400, msg: "Bad request" });
+  }
+  if (sort_by && !correctSort_by) {
+    next({ status: 400, msg: "Bad request" });
+  } else
+    fetchCommentByArticleId(article_id, sort_by, order)
+      .then(comments => {
+        res.status(200).send({ comments });
+      })
+      .catch(next);
 };
 
 const updateCommentById = (req, res, next) => {
   const { comment_id } = req.params;
-  //   console.log(req.body.inc_votes, "<-- console.log votes");
   const votes = req.body.inc_votes;
   const obj = req.body;
-  // console.log(req.body);
-  // console.log(Object.keys(req.body));
-  // console.log(Object.keys(req.body).length);
-  //   console.log(typeof votes);
-  //   console.log(comment_id);
   changeCommentById(comment_id, votes, obj)
     .then(comment => {
       res.status(200).send({ comment });

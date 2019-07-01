@@ -8,7 +8,7 @@ const fetchUserByUsername = username => {
     .then(user => {
       if (!user.length) {
         return Promise.reject({
-          status: 400,
+          status: 404,
           msg: `No user found for username: ${username}`
         });
       } else return user[0];

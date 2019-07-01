@@ -1,5 +1,5 @@
 exports.formatDate = list => {
-  list.forEach(listItem => {
+  list.map(listItem => {
     listItem.created_at = new Date(listItem.created_at);
   });
   return list;
@@ -15,17 +15,12 @@ exports.makeRefObj = list => {
 };
 
 exports.formatComments = (commentData, articleRef) => {
-  commentData.forEach(comment => {
-    comment.created_at = new Date(comment.created_at);
-  });
-  commentData.forEach(function(obj) {
-    obj.author = obj.created_by;
-    delete obj.created_by;
-  });
   return commentData.map(comment => {
-    const { belongs_to, ...restOfComment } = comment;
+    let { created_by, belongs_to, created_at, ...restOfComment } = comment;
+    const author = created_by;
     const article_id = articleRef[belongs_to];
-    // console.log({ article_id, ...restOfComment });
-    return { article_id, ...restOfComment };
+    const newDate = new Date(created_at);
+    created_at = newDate;
+    return { author, created_at, article_id, ...restOfComment };
   });
 };

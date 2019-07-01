@@ -1,15 +1,20 @@
 const connection = require("../db/connection.js");
 
-const insertCommentToArticle = (
-  id,
-  commentUsername,
-  commentBody,
-  commentObj
-) => {
+const checkExists = (value, table, column) => {
+  return connection
+    .select("*")
+    .from(table)
+    .where(column, value)
+    .then(rows => {
+      return rows.length !== 0;
+    });
+};
+
+const insertCommentToArticle = (id, commentObj) => {
   return connection
     .insert({
-      author: commentUsername,
-      body: commentBody,
+      author: commentObj.username,
+      body: commentObj.body,
       article_id: id
     })
     .into("comments")
@@ -25,24 +30,44 @@ const insertCommentToArticle = (
         return Promise.reject({ status: 400, msg: "Bad request" });
       } else if (commentObj.hasOwnProperty("body") === false) {
         return Promise.reject({ status: 400, msg: "Bad request" });
-      } else if (commentBody.length === 0) {
-        return Promise.reject({ status: 400, msg: "Bad request" });
-      } else if (commentBody.length === 0) {
+      } else if (commentObj.body.length === 0) {
         return Promise.reject({ status: 400, msg: "Bad request" });
       }
       return comment[0];
     });
 };
 
-const fetchCommentByArticleId = (id, sort_by) => {
+const fetchCommentByArticleId = (
+  id,
+  sort_by = "created_at",
+  order = "desc"
+) => {
   return connection
-    .select("*")
+    .select(
+      "comments.comment_id",
+      "comments.body",
+      "comments.votes",
+      "comments.created_at",
+      "comments.author"
+    )
     .from("comments")
     .leftJoin("articles", "articles.article_id", "comments.article_id")
     .groupBy("comments.comment_id", "articles.article_id")
     .where("articles.article_id", id)
-    .orderBy(sort_by || "comments.created_at", "desc")
+    .orderBy(sort_by || "comments.created_at", order)
     .then(comments => {
+      const articleIdExists = id
+        ? checkExists(id, "articles", "article_id")
+        : null;
+      return Promise.all([articleIdExists, comments]);
+    })
+    .then(([articleIdExists, comments]) => {
+      if (articleIdExists === false) {
+        return Promise.reject({
+          status: 404,
+          msg: `Article with id ${id} not found`
+        });
+      }
       if (!Number(id)) {
         return Promise.reject({
           status: 400,
@@ -53,18 +78,27 @@ const fetchCommentByArticleId = (id, sort_by) => {
     });
 };
 
-const changeCommentById = (comment_id, votes, obj) => {
+const changeCommentById = (comment_id, votes = 0, obj) => {
   return connection("comments")
     .where("comments.comment_id", comment_id)
     .increment("votes", votes)
     .returning("*")
     .then(comment => {
-      if (Object.keys(obj).length !== 1) {
+      if (!comment.length === true) {
+        return Promise.reject({
+          status: 404,
+          msg: `Comment with id ${comment_id} not found`
+        });
+      }
+      if (Object.keys(obj).length > 1) {
         return Promise.reject({
           status: 400,
           msg: "Bad request"
         });
-      } else if (obj.hasOwnProperty("inc_votes") === false) {
+      } else if (
+        Object.keys(obj).length >= 1 &&
+        obj.hasOwnProperty("inc_votes") === false
+      ) {
         return Promise.reject({ status: 400, msg: "Bad request" });
       } else if (!comment) {
         return Promise.reject({

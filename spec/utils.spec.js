@@ -16,7 +16,6 @@ describe("formatDate", () => {
     ];
     const actual = formatDate(input);
     const expected = [{ created_at: new Date(1471522072389) }];
-    // console.log(input[0].created_at);
     expect(actual).to.eql(expected);
   });
   it("returns the value of the created_at field in a PSQL rather than UNIX timestamp format when passed an array containing more than one article", () => {

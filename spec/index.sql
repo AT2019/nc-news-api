@@ -1,1 +1,1 @@
-select * from articles;
+select * from comments;
