@@ -5,7 +5,7 @@ const articlesRouter = require("./articles-router.js");
 const commentsRouter = require("./comments-router.js");
 const {
   displayEndpointsJSON
-} = require("../controllers/endpoint-controller.js");
+} = require("../controllers/endpoints-controller.js");
 
 const send405 = (req, res) => {
   res.status(405).send({ msg: "Method not allowed" });
