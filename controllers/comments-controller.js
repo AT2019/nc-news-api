@@ -21,6 +21,7 @@ const sendCommentByArticleId = (req, res, next) => {
     "comment_id",
     "body",
     "votes",
+    "article_id",
     "created_at",
     "author"
   ].includes(sort_by);

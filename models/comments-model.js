@@ -47,6 +47,7 @@ const fetchCommentByArticleId = (
       "comments.comment_id",
       "comments.body",
       "comments.votes",
+      "comments.article_id",
       "comments.created_at",
       "comments.author"
     )

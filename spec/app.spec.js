@@ -21,6 +21,21 @@ describe("/", () => {
   });
 
   describe("/api", () => {
+    it("INVALID METHOD status: 405", () => {
+      const invalidMethods = ["delete", "patch", "put"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/topics")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+  });
+
+  describe("/api", () => {
     describe("/topics", () => {
       it("GET status: 200, when provided a valid topics path and serves an array of all the topics objects", () => {
         return request(app)
@@ -346,6 +361,7 @@ describe("/", () => {
                   "comment_id",
                   "author",
                   "votes",
+                  "article_id",
                   "created_at",
                   "body"
                 );
@@ -363,6 +379,7 @@ describe("/", () => {
                   "author",
                   "votes",
                   "created_at",
+                  "article_id",
                   "body"
                 );
                 expect(body.comments.length).to.equal(13);
@@ -386,6 +403,7 @@ describe("/", () => {
                   "comment_id",
                   "author",
                   "votes",
+                  "article_id",
                   "created_at",
                   "body"
                 );

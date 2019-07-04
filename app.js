@@ -17,7 +17,6 @@ app.use((err, req, res, next) => {
 app.use((err, req, res, next) => {
   const psqlCodes = ["22P02"];
   const psqlCodes2 = ["23503"];
-  console.log(err.detail);
   if (psqlCodes.includes(err.code))
     res.status(400).send({ msg: "Bad request" });
   else if (psqlCodes2.includes(err.code))
