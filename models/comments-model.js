@@ -40,7 +40,8 @@ const insertCommentToArticle = (id, commentObj) => {
 const fetchCommentByArticleId = (
   id,
   sort_by = "created_at",
-  order = "desc"
+  order = "desc",
+  limit = 10
 ) => {
   return connection
     .select(
@@ -56,6 +57,7 @@ const fetchCommentByArticleId = (
     .groupBy("comments.comment_id", "articles.article_id")
     .where("articles.article_id", id)
     .orderBy(sort_by || "comments.created_at", order)
+    .limit(limit)
     .then(comments => {
       const articleIdExists = id
         ? checkExists(id, "articles", "article_id")

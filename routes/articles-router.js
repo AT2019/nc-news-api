@@ -3,7 +3,9 @@ const articlesRouter = require("express").Router();
 const {
   sendArticleById,
   updateArticleById,
-  sendArticles
+  sendArticles,
+  deleteArticleById,
+  addArticle
 } = require("../controllers/articles-controllers.js");
 const {
   addCommentToArticle,
@@ -16,6 +18,7 @@ const send405 = (req, res, next) => {
 
 articlesRouter
   .route("/")
+  .post(addArticle)
   .get(sendArticles)
   .all(send405);
 
@@ -23,6 +26,7 @@ articlesRouter
   .route("/:article_id")
   .get(sendArticleById)
   .patch(updateArticleById)
+  .delete(deleteArticleById)
   .all(send405);
 
 articlesRouter

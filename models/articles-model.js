@@ -58,7 +58,8 @@ const fetchArticles = (
   sort_by = "created_at",
   order = "desc",
   author,
-  topic
+  topic,
+  limit = 10
 ) => {
   return connection
     .select(
@@ -72,8 +73,11 @@ const fetchArticles = (
     .from("articles")
     .count({ comment_count: "comment_id" })
     .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
+
     .groupBy("articles.article_id")
     .orderBy(sort_by || "articles.created_at", order)
+    .offset(0)
+    .limit(limit)
     .modify(function(queryBuilder) {
       if (author && topic) {
         queryBuilder.where("articles.author", author);
@@ -102,4 +106,56 @@ const fetchArticles = (
     });
 };
 
-module.exports = { fetchArticleById, changeArticleById, fetchArticles };
+const removeArticleById = article_id => {
+  return connection
+    .delete()
+    .from("articles")
+    .where("article_id", article_id)
+    .then(deleteCount => {
+      if (!deleteCount) {
+        return Promise.reject({
+          status: 404,
+          msg: `Article with id ${article_id} not found`
+        });
+      } else return deleteCount;
+    });
+};
+
+const insertArticle = articleObj => {
+  return connection
+    .insert({
+      author: articleObj.author,
+      title: articleObj.title,
+      topic: articleObj.topic,
+      body: articleObj.body
+    })
+    .into("articles")
+    .returning("*")
+    .then(article => {
+      if (Object.keys(articleObj).length !== 4) {
+        return Promise.reject({
+          status: 400,
+          msg: "Bad request"
+        });
+      } else if (articleObj.hasOwnProperty("author") === false) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      } else if (articleObj.hasOwnProperty("title") === false) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      } else if (articleObj.hasOwnProperty("topic") === false) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      } else if (articleObj.hasOwnProperty("body") === false) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      } else if (articleObj.length === 0) {
+        return Promise.reject({ status: 400, msg: "Bad request" });
+      }
+      return article[0];
+    });
+};
+
+module.exports = {
+  fetchArticleById,
+  changeArticleById,
+  fetchArticles,
+  removeArticleById,
+  insertArticle
+};

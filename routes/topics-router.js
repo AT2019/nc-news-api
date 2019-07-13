@@ -1,6 +1,9 @@
 const topicsRouter = require("express").Router();
 
-const { sendTopics } = require("../controllers/topics-controllers.js");
+const {
+  sendTopics,
+  addTopic
+} = require("../controllers/topics-controllers.js");
 
 const send405 = (req, res, next) => {
   res.status(405).send({ msg: "Method not allowed" });
@@ -8,6 +11,7 @@ const send405 = (req, res, next) => {
 
 topicsRouter
   .route("/")
+  .post(addTopic)
   .get(sendTopics)
   .all(send405);
 

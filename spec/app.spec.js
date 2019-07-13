@@ -365,7 +365,7 @@ describe("/", () => {
                   "created_at",
                   "body"
                 );
-                expect(body.comments.length).to.equal(13);
+                expect(body.comments.length).to.equal(10);
                 expect(body.comments).to.be.descendingBy("created_at");
               });
           });
@@ -382,7 +382,7 @@ describe("/", () => {
                   "article_id",
                   "body"
                 );
-                expect(body.comments.length).to.equal(13);
+                expect(body.comments.length).to.equal(10);
                 expect(body.comments).to.be.descendingBy("votes");
               });
           });
@@ -407,7 +407,7 @@ describe("/", () => {
                   "created_at",
                   "body"
                 );
-                expect(body.comments.length).to.equal(13);
+                expect(body.comments.length).to.equal(10);
                 expect(body.comments).to.be.ascendingBy("created_at");
               });
           });
@@ -467,7 +467,6 @@ describe("/", () => {
               "votes",
               "comment_count"
             );
-            expect(body.articles.length).to.equal(12);
             expect(body.articles).to.be.descendingBy("created_at");
           });
       });
@@ -500,7 +499,7 @@ describe("/", () => {
           .get("/api/articles?topic=mitch")
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles.length).to.equal(11);
+            expect(body.articles.length).to.equal(10);
           });
       });
       it("GET status 404: returns an error message when provided a non-existent topic", () => {
@@ -671,6 +670,168 @@ describe("/", () => {
         });
         return Promise.all(methodPromises);
       });
+    });
+  });
+  describe("/articles", () => {
+    describe("/:article_id", () => {
+      it("DELETE status: 204 when provided a valid article_id", () => {
+        return request(app)
+          .delete("/api/articles/2")
+          .expect(204);
+      });
+      it("DELETE status: 400 if we try to delete something which does not have a valid id", () => {
+        return request(app)
+          .delete("/api/articles/not-a-valid-id")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad request");
+          });
+      });
+      it("DELETE status: 404 if we try to delete a valid, but non-existent, article id", () => {
+        return request(app)
+          .delete("/api/articles/9999")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Article with id 9999 not found");
+          });
+      });
+      it("INVALID METHOD status: 405", () => {
+        const invalidMethods = ["post"];
+        const methodPromises = invalidMethods.map(method => {
+          return request(app)
+            [method]("/api/articles/1")
+            .expect(405)
+            .then(({ body }) => {
+              expect(body.msg).to.equal("Method not allowed");
+            });
+        });
+      });
+    });
+  });
+  describe("/users", () => {
+    it("POST request 201: returns a new user", () => {
+      return request(app)
+        .post("/api/users")
+        .send({
+          username: "anke_teale",
+          name: "anke",
+          avatar_url: "https://github.com/AT2019"
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.user).to.contain.keys("username", "name", "avatar_url");
+          expect(body.user.username).to.equal("anke_teale");
+          expect(body.user.name).to.equal("anke");
+          expect(body.user.avatar_url).to.equal("https://github.com/AT2019");
+        });
+    });
+    it("INVALID METHOD status: 405", () => {
+      const invalidMethods = ["delete", "patch", "put"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/users")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+  });
+  describe("/users", () => {
+    it("GET status: 200, when provided a valid users path and serves an array of all the users objects", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.users[0]).to.contain.keys(
+            "username",
+            "name",
+            "avatar_url"
+          );
+        });
+    });
+    it("INVALID METHOD status: 405", () => {
+      const invalidMethods = ["delete", "patch", "put"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/users")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+  });
+  describe("/topics", () => {
+    it("POST request 201: returns a new topic", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          slug: "racing",
+          description:
+            "Racing is life. Anything before or after is just waiting"
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.topic).to.contain.keys("slug", "description");
+          expect(body.topic.slug).to.equal("racing");
+          expect(body.topic.description).to.equal(
+            "Racing is life. Anything before or after is just waiting"
+          );
+        });
+    });
+    it("INVALID METHOD status: 405", () => {
+      const invalidMethods = ["delete", "patch", "put"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/topics")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+  });
+  describe("/articles", () => {
+    it("POST request 201: returns a new articles", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "They're not exactly cats, are they?",
+          topic: "mitch",
+          author: "rogersop",
+          body: "Well? Think about it."
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.article).to.contain.keys(
+            "article_id",
+            "author",
+            "title",
+            "topic",
+            "created_at",
+            "votes"
+          );
+          expect(body.article.author).to.equal("rogersop");
+          expect(body.article.title).to.equal(
+            "They're not exactly cats, are they?"
+          );
+        });
+    });
+    it("INVALID METHOD status: 405", () => {
+      const invalidMethods = ["delete", "patch", "put"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/articles")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method not allowed");
+          });
+      });
+      return Promise.all(methodPromises);
     });
   });
 });
