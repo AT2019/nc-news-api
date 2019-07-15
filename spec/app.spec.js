@@ -365,7 +365,7 @@ describe("/", () => {
                   "created_at",
                   "body"
                 );
-                expect(body.comments.length).to.equal(10);
+                expect(body.comments.length).to.equal(13);
                 expect(body.comments).to.be.descendingBy("created_at");
               });
           });
@@ -382,7 +382,7 @@ describe("/", () => {
                   "article_id",
                   "body"
                 );
-                expect(body.comments.length).to.equal(10);
+                expect(body.comments.length).to.equal(13);
                 expect(body.comments).to.be.descendingBy("votes");
               });
           });
@@ -407,7 +407,7 @@ describe("/", () => {
                   "created_at",
                   "body"
                 );
-                expect(body.comments.length).to.equal(10);
+                expect(body.comments.length).to.equal(13);
                 expect(body.comments).to.be.ascendingBy("created_at");
               });
           });

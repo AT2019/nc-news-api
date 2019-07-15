@@ -40,45 +40,47 @@ const insertCommentToArticle = (id, commentObj) => {
 const fetchCommentByArticleId = (
   id,
   sort_by = "created_at",
-  order = "desc",
-  limit = 10
+  order = "desc"
+  // limit = 10
 ) => {
-  return connection
-    .select(
-      "comments.comment_id",
-      "comments.body",
-      "comments.votes",
-      "comments.article_id",
-      "comments.created_at",
-      "comments.author"
-    )
-    .from("comments")
-    .leftJoin("articles", "articles.article_id", "comments.article_id")
-    .groupBy("comments.comment_id", "articles.article_id")
-    .where("articles.article_id", id)
-    .orderBy(sort_by || "comments.created_at", order)
-    .limit(limit)
-    .then(comments => {
-      const articleIdExists = id
-        ? checkExists(id, "articles", "article_id")
-        : null;
-      return Promise.all([articleIdExists, comments]);
-    })
-    .then(([articleIdExists, comments]) => {
-      if (articleIdExists === false) {
-        return Promise.reject({
-          status: 404,
-          msg: `Article with id ${id} not found`
-        });
-      }
-      if (!Number(id)) {
-        return Promise.reject({
-          status: 400,
-          msg: "Bad request"
-        });
-      }
-      return comments;
-    });
+  return (
+    connection
+      .select(
+        "comments.comment_id",
+        "comments.body",
+        "comments.votes",
+        "comments.article_id",
+        "comments.created_at",
+        "comments.author"
+      )
+      .from("comments")
+      .leftJoin("articles", "articles.article_id", "comments.article_id")
+      .groupBy("comments.comment_id", "articles.article_id")
+      .where("articles.article_id", id)
+      .orderBy(sort_by || "comments.created_at", order)
+      // .limit(limit)
+      .then(comments => {
+        const articleIdExists = id
+          ? checkExists(id, "articles", "article_id")
+          : null;
+        return Promise.all([articleIdExists, comments]);
+      })
+      .then(([articleIdExists, comments]) => {
+        if (articleIdExists === false) {
+          return Promise.reject({
+            status: 404,
+            msg: `Article with id ${id} not found`
+          });
+        }
+        if (!Number(id)) {
+          return Promise.reject({
+            status: 400,
+            msg: "Bad request"
+          });
+        }
+        return comments;
+      })
+  );
 };
 
 const changeCommentById = (comment_id, votes = 0, obj) => {
