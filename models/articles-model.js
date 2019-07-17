@@ -58,52 +58,54 @@ const fetchArticles = (
   sort_by = "created_at",
   order = "desc",
   author,
-  topic,
-  limit = 10
+  topic
+  // limit = 10
 ) => {
-  return connection
-    .select(
-      "articles.author",
-      "articles.title",
-      "articles.article_id",
-      "articles.topic",
-      "articles.created_at",
-      "articles.votes"
-    )
-    .from("articles")
-    .count({ comment_count: "comment_id" })
-    .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
+  return (
+    connection
+      .select(
+        "articles.author",
+        "articles.title",
+        "articles.article_id",
+        "articles.topic",
+        "articles.created_at",
+        "articles.votes"
+      )
+      .from("articles")
+      .count({ comment_count: "comment_id" })
+      .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
 
-    .groupBy("articles.article_id")
-    .orderBy(sort_by || "articles.created_at", order)
-    .offset(0)
-    .limit(limit)
-    .modify(function(queryBuilder) {
-      if (author && topic) {
-        queryBuilder.where("articles.author", author);
-      } else if (author) {
-        queryBuilder.where("articles.author", author);
-      } else if (topic) {
-        queryBuilder.where("articles.topic", topic);
-      }
-    })
-    .then(articles => {
-      const authorExist = author
-        ? checkExists(author, "users", "username")
-        : null;
-      const topicExist = topic ? checkExists(topic, "topics", "slug") : null;
-      return Promise.all([authorExist, topicExist, articles]);
-    })
-    .then(([authorExist, topicExist, articles]) => {
-      if (authorExist === false) {
-        return Promise.reject({ status: 404, msg: "Author not found" });
-      } else if (topicExist === false) {
-        return Promise.reject({ status: 404, msg: "Topic not found" });
-      }
-      if (!articles) {
-        return Promise.reject({ status: 404, msg: "Article not found" });
-      } else return articles;
-    });
+      .groupBy("articles.article_id")
+      .orderBy(sort_by || "articles.created_at", order)
+      // .offset(0)
+      // .limit(limit)
+      .modify(function(queryBuilder) {
+        if (author && topic) {
+          queryBuilder.where("articles.author", author);
+        } else if (author) {
+          queryBuilder.where("articles.author", author);
+        } else if (topic) {
+          queryBuilder.where("articles.topic", topic);
+        }
+      })
+      .then(articles => {
+        const authorExist = author
+          ? checkExists(author, "users", "username")
+          : null;
+        const topicExist = topic ? checkExists(topic, "topics", "slug") : null;
+        return Promise.all([authorExist, topicExist, articles]);
+      })
+      .then(([authorExist, topicExist, articles]) => {
+        if (authorExist === false) {
+          return Promise.reject({ status: 404, msg: "Author not found" });
+        } else if (topicExist === false) {
+          return Promise.reject({ status: 404, msg: "Topic not found" });
+        }
+        if (!articles) {
+          return Promise.reject({ status: 404, msg: "Article not found" });
+        } else return articles;
+      })
+  );
 };
 
 const removeArticleById = article_id => {

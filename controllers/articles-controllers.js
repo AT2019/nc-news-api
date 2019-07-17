@@ -36,7 +36,8 @@ const sendArticles = (req, res, next) => {
     "votes",
     "topic",
     "author",
-    "created_at"
+    "created_at",
+    "comment_count"
   ].includes(sort_by);
   if (order && !correctOrder) {
     next({ status: 400, msg: "Bad request" });

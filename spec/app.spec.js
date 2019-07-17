@@ -499,7 +499,7 @@ describe("/", () => {
           .get("/api/articles?topic=mitch")
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles.length).to.equal(10);
+            expect(body.articles.length).to.equal(11);
           });
       });
       it("GET status 404: returns an error message when provided a non-existent topic", () => {
