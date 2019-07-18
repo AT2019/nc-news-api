@@ -66,6 +66,7 @@ const fetchArticles = (
       .select(
         "articles.author",
         "articles.title",
+        "articles.body",
         "articles.article_id",
         "articles.topic",
         "articles.created_at",
