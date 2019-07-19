@@ -155,10 +155,18 @@ const insertArticle = articleObj => {
     });
 };
 
+const countArticles = () => {
+  return connection
+    .select("article_id")
+    .from("articles")
+    .then(articles => articles.length);
+};
+
 module.exports = {
   fetchArticleById,
   changeArticleById,
   fetchArticles,
   removeArticleById,
-  insertArticle
+  insertArticle,
+  countArticles
 };

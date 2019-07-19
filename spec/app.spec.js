@@ -453,7 +453,7 @@ describe("/", () => {
   });
   describe("/api", () => {
     describe("/articles", () => {
-      it("GET status 200: returns an array of article objects", () => {
+      it.only("GET status 200: returns an array of article objects", () => {
         return request(app)
           .get("/api/articles?sort_by=created_at")
           .expect(200)
@@ -468,6 +468,7 @@ describe("/", () => {
               "comment_count"
             );
             expect(body.articles).to.be.descendingBy("created_at");
+            expect(body.total_count).to.equal(12);
           });
       });
       it("GET status 200: returns an array of article objects sorted in descending order by author", () => {

@@ -3,7 +3,8 @@ const {
   changeArticleById,
   fetchArticles,
   removeArticleById,
-  insertArticle
+  insertArticle,
+  countArticles
 } = require("../models/articles-model.js");
 
 const sendArticleById = (req, res, next) => {
@@ -47,7 +48,11 @@ const sendArticles = (req, res, next) => {
   } else
     fetchArticles(sort_by, order, author, topic)
       .then(articles => {
-        res.status(200).send({ articles });
+        const total_count = countArticles();
+        return Promise.all([total_count, articles]);
+      })
+      .then(([total_count, articles]) => {
+        res.status(200).send({ total_count, articles });
       })
       .catch(next);
 };
