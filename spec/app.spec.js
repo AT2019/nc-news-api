@@ -812,7 +812,9 @@ describe("/", () => {
             "article_id",
             "author",
             "title",
-            "topic"
+            "topic",
+            "created_at",
+            "votes"
           );
           expect(body.article.author).to.equal("rogersop");
           expect(body.article.title).to.equal(
