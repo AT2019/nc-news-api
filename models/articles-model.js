@@ -135,12 +135,13 @@ const insertArticle = articleObj => {
     .into("articles")
     .returning("*")
     .then(article => {
-      if (Object.keys(articleObj).length !== 4) {
-        return Promise.reject({
-          status: 400,
-          msg: "Bad request"
-        });
-      } else if (articleObj.hasOwnProperty("author") === false) {
+      // if (Object.keys(articleObj).length !== 4) {
+      //   return Promise.reject({
+      //     status: 400,
+      //     msg: "Bad request"
+      //   });
+      // } else
+      if (articleObj.hasOwnProperty("author") === false) {
         return Promise.reject({ status: 400, msg: "Bad request" });
       } else if (articleObj.hasOwnProperty("title") === false) {
         return Promise.reject({ status: 400, msg: "Bad request" });
