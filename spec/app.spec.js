@@ -453,7 +453,7 @@ describe("/", () => {
   });
   describe("/api", () => {
     describe("/articles", () => {
-      it.only("GET status 200: returns an array of article objects", () => {
+      it("GET status 200: returns an array of article objects", () => {
         return request(app)
           .get("/api/articles?sort_by=created_at")
           .expect(200)
@@ -812,9 +812,7 @@ describe("/", () => {
             "article_id",
             "author",
             "title",
-            "topic",
-            "created_at",
-            "votes"
+            "topic"
           );
           expect(body.article.author).to.equal("rogersop");
           expect(body.article.title).to.equal(
