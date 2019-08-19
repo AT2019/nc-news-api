@@ -796,30 +796,24 @@ describe("/", () => {
       return Promise.all(methodPromises);
     });
   });
+
   describe("/articles", () => {
-    it("POST request 201: returns a new articles", () => {
+    it("POST request 201: returns a new article", () => {
       return request(app)
         .post("/api/articles")
         .send({
-          title: "They're not exactly cats, are they?",
-          topic: "mitch",
-          author: "rogersop",
-          body: "Well? Think about it."
+          title: "test",
+          body: "test article",
+          topic: "cats",
+          author: "butter_bridge"
         })
         .expect(201)
         .then(({ body }) => {
-          expect(body.article).to.contain.keys(
-            "article_id",
-            "author",
-            "title",
-            "topic",
-            "created_at",
-            "votes"
-          );
-          expect(body.article.author).to.equal("rogersop");
-          expect(body.article.title).to.equal(
-            "They're not exactly cats, are they?"
-          );
+          expect(body).to.be.an("object");
+          expect(body.article.title).to.equal("test");
+          expect(body.article.topic).to.equal("cats");
+          expect(body.article.author).to.equal("butter_bridge");
+          expect(body.article.body).to.equal("test article");
         });
     });
     it("INVALID METHOD status: 405", () => {

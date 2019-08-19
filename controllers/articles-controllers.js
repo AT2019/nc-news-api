@@ -66,9 +66,17 @@ const deleteArticleById = (req, res, next) => {
     .catch(next);
 };
 
+// const addArticle = (req, res, next) => {
+//   // const articleObj = req.body;
+//   // console.log(articleObj);
+//   insertArticle(articleObj)
+//     .then(article => res.status(201).send({ article: article }))
+//     .catch(next);
+// };
+
 const addArticle = (req, res, next) => {
-  const articleObj = req.body;
-  insertArticle(articleObj)
+  const newArticle = req.body;
+  insertArticle(newArticle)
     .then(article => res.status(201).send({ article: article }))
     .catch(next);
 };

@@ -124,34 +124,45 @@ const removeArticleById = article_id => {
     });
 };
 
-const insertArticle = articleObj => {
+// const insertArticle = articleObj => {
+//   return connection
+//     .insert({
+//       title: articleObj.title,
+//       topic: articleObj.topic,
+//       author: articleObj.author,
+//       body: articleObj.body
+//     })
+//     .into("articles")
+//     .returning("*")
+//     .then(article => {
+// if (Object.keys(articleObj).length !== 4) {
+//   return Promise.reject({
+//     status: 400,
+//     msg: "Bad request"
+//   });
+// } else
+// if (articleObj.hasOwnProperty("author") === false) {
+//   return Promise.reject({ status: 400, msg: "Bad request" });
+// } else if (articleObj.hasOwnProperty("title") === false) {
+//   return Promise.reject({ status: 400, msg: "Bad request" });
+// } else if (articleObj.hasOwnProperty("topic") === false) {
+//   return Promise.reject({ status: 400, msg: "Bad request" });
+// } else if (articleObj.hasOwnProperty("body") === false) {
+//   return Promise.reject({ status: 400, msg: "Bad request" });
+// } else if (articleObj.length === 0) {
+//   return Promise.reject({ status: 400, msg: "Bad request" });
+// }
+
+//       return article[0];
+//     });
+// };
+
+const insertArticle = article => {
   return connection
-    .insert({
-      author: articleObj.author,
-      title: articleObj.title,
-      topic: articleObj.topic,
-      body: articleObj.body
-    })
-    .into("articles")
+    .insert(article)
     .returning("*")
+    .from("articles")
     .then(article => {
-      // if (Object.keys(articleObj).length !== 4) {
-      //   return Promise.reject({
-      //     status: 400,
-      //     msg: "Bad request"
-      //   });
-      // } else
-      if (articleObj.hasOwnProperty("author") === false) {
-        return Promise.reject({ status: 400, msg: "Bad request" });
-      } else if (articleObj.hasOwnProperty("title") === false) {
-        return Promise.reject({ status: 400, msg: "Bad request" });
-      } else if (articleObj.hasOwnProperty("topic") === false) {
-        return Promise.reject({ status: 400, msg: "Bad request" });
-      } else if (articleObj.hasOwnProperty("body") === false) {
-        return Promise.reject({ status: 400, msg: "Bad request" });
-      } else if (articleObj.length === 0) {
-        return Promise.reject({ status: 400, msg: "Bad request" });
-      }
       return article[0];
     });
 };
