@@ -58,55 +58,54 @@ const fetchArticles = (
   sort_by = "created_at",
   order = "desc",
   author,
-  topic
-  // limit = 10
+  topic,
+  limit = 10,
+  offset
 ) => {
-  return (
-    connection
-      .select(
-        "articles.author",
-        "articles.title",
-        "articles.body",
-        "articles.article_id",
-        "articles.topic",
-        "articles.created_at",
-        "articles.votes"
-      )
-      .from("articles")
-      .count({ comment_count: "comment_id" })
-      .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
+  return connection
+    .select(
+      "articles.author",
+      "articles.title",
+      "articles.body",
+      "articles.article_id",
+      "articles.topic",
+      "articles.created_at",
+      "articles.votes"
+    )
+    .from("articles")
+    .count({ comment_count: "comment_id" })
+    .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
 
-      .groupBy("articles.article_id")
-      .orderBy(sort_by || "articles.created_at", order)
-      // .offset(0)
-      // .limit(limit)
-      .modify(function(queryBuilder) {
-        if (author && topic) {
-          queryBuilder.where("articles.author", author);
-        } else if (author) {
-          queryBuilder.where("articles.author", author);
-        } else if (topic) {
-          queryBuilder.where("articles.topic", topic);
-        }
-      })
-      .then(articles => {
-        const authorExist = author
-          ? checkExists(author, "users", "username")
-          : null;
-        const topicExist = topic ? checkExists(topic, "topics", "slug") : null;
-        return Promise.all([authorExist, topicExist, articles]);
-      })
-      .then(([authorExist, topicExist, articles]) => {
-        if (authorExist === false) {
-          return Promise.reject({ status: 404, msg: "Author not found" });
-        } else if (topicExist === false) {
-          return Promise.reject({ status: 404, msg: "Topic not found" });
-        }
-        if (!articles) {
-          return Promise.reject({ status: 404, msg: "Article not found" });
-        } else return articles;
-      })
-  );
+    .groupBy("articles.article_id")
+    .orderBy(sort_by || "articles.created_at", order)
+    .offset(offset)
+    .limit(limit)
+    .modify(function(queryBuilder) {
+      if (author && topic) {
+        queryBuilder.where("articles.author", author);
+      } else if (author) {
+        queryBuilder.where("articles.author", author);
+      } else if (topic) {
+        queryBuilder.where("articles.topic", topic);
+      }
+    })
+    .then(articles => {
+      const authorExist = author
+        ? checkExists(author, "users", "username")
+        : null;
+      const topicExist = topic ? checkExists(topic, "topics", "slug") : null;
+      return Promise.all([authorExist, topicExist, articles]);
+    })
+    .then(([authorExist, topicExist, articles]) => {
+      if (authorExist === false) {
+        return Promise.reject({ status: 404, msg: "Author not found" });
+      } else if (topicExist === false) {
+        return Promise.reject({ status: 404, msg: "Topic not found" });
+      }
+      if (!articles) {
+        return Promise.reject({ status: 404, msg: "Article not found" });
+      } else return articles;
+    });
 };
 
 const removeArticleById = article_id => {
@@ -123,39 +122,6 @@ const removeArticleById = article_id => {
       } else return deleteCount;
     });
 };
-
-// const insertArticle = articleObj => {
-//   return connection
-//     .insert({
-//       title: articleObj.title,
-//       topic: articleObj.topic,
-//       author: articleObj.author,
-//       body: articleObj.body
-//     })
-//     .into("articles")
-//     .returning("*")
-//     .then(article => {
-// if (Object.keys(articleObj).length !== 4) {
-//   return Promise.reject({
-//     status: 400,
-//     msg: "Bad request"
-//   });
-// } else
-// if (articleObj.hasOwnProperty("author") === false) {
-//   return Promise.reject({ status: 400, msg: "Bad request" });
-// } else if (articleObj.hasOwnProperty("title") === false) {
-//   return Promise.reject({ status: 400, msg: "Bad request" });
-// } else if (articleObj.hasOwnProperty("topic") === false) {
-//   return Promise.reject({ status: 400, msg: "Bad request" });
-// } else if (articleObj.hasOwnProperty("body") === false) {
-//   return Promise.reject({ status: 400, msg: "Bad request" });
-// } else if (articleObj.length === 0) {
-//   return Promise.reject({ status: 400, msg: "Bad request" });
-// }
-
-//       return article[0];
-//     });
-// };
 
 const insertArticle = article => {
   return connection

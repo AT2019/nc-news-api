@@ -28,7 +28,8 @@ const updateArticleById = (req, res, next) => {
 };
 
 const sendArticles = (req, res, next) => {
-  const { sort_by, order, author, topic } = req.query;
+  const { sort_by, order, author, topic, limit = 10, p = 1 } = req.query;
+  const offset = limit * (p - 1);
   const correctOrder = ["asc", "desc"].includes(order);
   const correctSort_by = [
     "article_id",
@@ -65,14 +66,6 @@ const deleteArticleById = (req, res, next) => {
     })
     .catch(next);
 };
-
-// const addArticle = (req, res, next) => {
-//   // const articleObj = req.body;
-//   // console.log(articleObj);
-//   insertArticle(articleObj)
-//     .then(article => res.status(201).send({ article: article }))
-//     .catch(next);
-// };
 
 const addArticle = (req, res, next) => {
   const newArticle = req.body;

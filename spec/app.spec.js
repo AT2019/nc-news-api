@@ -500,7 +500,7 @@ describe("/", () => {
           .get("/api/articles?topic=mitch")
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles.length).to.equal(11);
+            expect(body.articles.length).to.be.lessThan(11);
           });
       });
       it("GET status 404: returns an error message when provided a non-existent topic", () => {
@@ -805,7 +805,8 @@ describe("/", () => {
           title: "test",
           body: "test article",
           topic: "cats",
-          author: "butter_bridge"
+          author: "butter_bridge",
+          created_at: new Date()
         })
         .expect(201)
         .then(({ body }) => {
