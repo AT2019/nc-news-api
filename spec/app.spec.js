@@ -798,7 +798,7 @@ describe("/", () => {
   });
 
   describe("/articles", () => {
-    it("POST request 201: returns a new article", () => {
+    it.only("POST request 201: returns a new article", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -809,6 +809,7 @@ describe("/", () => {
         })
         .expect(201)
         .then(({ body }) => {
+          console.log(body);
           expect(body).to.be.an("object");
           expect(body.article.title).to.equal("test");
           expect(body.article.topic).to.equal("cats");
