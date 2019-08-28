@@ -47,7 +47,7 @@ const sendArticles = (req, res, next) => {
   if (sort_by && !correctSort_by) {
     next({ status: 400, msg: "Bad request" });
   } else
-    fetchArticles(sort_by, order, author, topic)
+    fetchArticles(sort_by, order, author, topic, limit, p)
       .then(articles => {
         const total_count = countArticles();
         return Promise.all([total_count, articles]);

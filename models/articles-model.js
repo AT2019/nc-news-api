@@ -60,8 +60,9 @@ const fetchArticles = (
   author,
   topic,
   limit = 10,
-  offset
+  p = 1
 ) => {
+  const offset = (p - 1) * limit;
   return connection
     .select(
       "articles.author",
@@ -78,8 +79,8 @@ const fetchArticles = (
 
     .groupBy("articles.article_id")
     .orderBy(sort_by || "articles.created_at", order)
-    .offset(offset)
     .limit(limit)
+    .offset(offset)
     .modify(function(queryBuilder) {
       if (author && topic) {
         queryBuilder.where("articles.author", author);

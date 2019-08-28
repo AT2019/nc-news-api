@@ -798,7 +798,7 @@ describe("/", () => {
   });
 
   describe("/articles", () => {
-    it.only("POST request 201: returns a new article", () => {
+    it("POST request 201: returns a new article", () => {
       return request(app)
         .post("/api/articles")
         .send({
