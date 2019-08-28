@@ -64,48 +64,54 @@ const fetchArticles = (
 ) => {
   const offset = (p - 1) * limit;
   return connection
-    .select(
-      "articles.author",
-      "articles.title",
-      "articles.body",
-      "articles.article_id",
-      "articles.topic",
-      "articles.created_at",
-      "articles.votes"
-    )
+    .select("articles.*")
     .from("articles")
-    .count({ comment_count: "comment_id" })
-    .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
-
+    .count("comments.comment_id as comment_count")
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
     .groupBy("articles.article_id")
-    .orderBy(sort_by || "articles.created_at", order)
+    .orderBy(sort_by, order)
     .limit(limit)
     .offset(offset)
-    .modify(function(queryBuilder) {
-      if (author && topic) {
-        queryBuilder.where("articles.author", author);
-      } else if (author) {
-        queryBuilder.where("articles.author", author);
+    .modify(query => {
+      if (author) {
+        query.where("articles.author", author);
       } else if (topic) {
-        queryBuilder.where("articles.topic", topic);
+        query.where("articles.topic", topic);
       }
     })
     .then(articles => {
-      const authorExist = author
+      const authorExists = author
         ? checkExists(author, "users", "username")
         : null;
-      const topicExist = topic ? checkExists(topic, "topics", "slug") : null;
-      return Promise.all([authorExist, topicExist, articles]);
+      const topicExists = topic ? checkExists(topic, "topics", "slug") : null;
+      return Promise.all([authorExists, topicExists, articles]);
     })
-    .then(([authorExist, topicExist, articles]) => {
-      if (authorExist === false) {
-        return Promise.reject({ status: 404, msg: "Author not found" });
-      } else if (topicExist === false) {
-        return Promise.reject({ status: 404, msg: "Topic not found" });
-      }
-      if (!articles) {
-        return Promise.reject({ status: 404, msg: "Article not found" });
+    .then(([authorExists, topicExists, articles]) => {
+      if (authorExists === false) {
+        return Promise.reject({
+          status: 404,
+          msg: `Author not found`
+        });
+      } else if (topicExists === false) {
+        return Promise.reject({ status: 404, msg: `Topic not found` });
       } else return articles;
+    });
+};
+
+const fetchAllArticlesCount = (topic, author) => {
+  return connection
+    .select("*")
+    .from("articles")
+    .modify(query => {
+      if (topic) {
+        query.where("articles.topic", topic);
+      } else if (author) {
+        query.where("articles.author", author);
+      }
+    })
+    .returning("*")
+    .then(articles => {
+      return articles.length;
     });
 };
 
@@ -134,12 +140,12 @@ const insertArticle = article => {
     });
 };
 
-const countArticles = () => {
-  return connection
-    .select("article_id")
-    .from("articles")
-    .then(articles => articles.length);
-};
+// const countArticles = () => {
+//   return connection
+//     .select("article_id")
+//     .from("articles")
+//     .then(articles => articles.length);
+// };
 
 module.exports = {
   fetchArticleById,
@@ -147,5 +153,5 @@ module.exports = {
   fetchArticles,
   removeArticleById,
   insertArticle,
-  countArticles
+  fetchAllArticlesCount
 };
