@@ -41,7 +41,6 @@ const fetchCommentByArticleId = (
   id,
   sort_by = "created_at",
   order = "desc"
-  // limit = 10
 ) => {
   return (
     connection

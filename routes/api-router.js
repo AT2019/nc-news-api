@@ -3,20 +3,16 @@ const topicsRouter = require("./topics-router.js");
 const usersRouter = require("./users-router.js");
 const articlesRouter = require("./articles-router.js");
 const commentsRouter = require("./comments-router.js");
-const {
-  displayEndpointsJSON
-} = require("../controllers/endpoints-controller.js");
+const jsonEndpoints = require("../endpoints.json");
 
 const send405 = (req, res) => {
   res.status(405).send({ msg: "Method not allowed" });
-
-  apiRouter
-    .route("/")
-    .get(displayEndpointsJSON)
-    .all(send405);
 };
 
-apiRouter.route("/api").all(send405);
+apiRouter
+  .route("/")
+  .get((req, res) => res.status(200).send(jsonEndpoints))
+  .all(send405);
 
 apiRouter.use("/topics", topicsRouter);
 apiRouter.use("/users", usersRouter);

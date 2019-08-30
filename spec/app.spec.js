@@ -5,6 +5,7 @@ const app = require("../app.js");
 const chai = require("chai");
 const chaiSorted = require("chai-sorted");
 const { expect } = chai;
+const jsonEndpoints = require("../endpoints.json");
 chai.use(chaiSorted);
 
 describe("/", () => {
@@ -19,7 +20,21 @@ describe("/", () => {
         expect(res.body.msg).to.equal("Page not found");
       });
   });
-
+  describe("GET /api", () => {
+    it("GET: status 200, responds with JSON describing all the available endpoints", () => {
+      return request(app)
+        .get("/api")
+        .send(jsonEndpoints)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body["GET /api/topics"]).to.contain.keys(
+            "description",
+            "queries",
+            "exampleResponse"
+          );
+        });
+    });
+  });
   describe("/api", () => {
     it("INVALID METHOD status: 405", () => {
       const invalidMethods = ["delete", "patch", "put"];
@@ -809,7 +824,6 @@ describe("/", () => {
         })
         .expect(201)
         .then(({ body }) => {
-          console.log(body);
           expect(body).to.be.an("object");
           expect(body.article.title).to.equal("test");
           expect(body.article.topic).to.equal("cats");

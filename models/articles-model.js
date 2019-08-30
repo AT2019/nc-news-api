@@ -44,16 +44,6 @@ const changeArticleById = (id, votes = 0, obj) => {
     });
 };
 
-const checkExists = (value, table, column) => {
-  return connection
-    .select("*")
-    .from(table)
-    .where(column, value)
-    .then(rows => {
-      return rows.length !== 0;
-    });
-};
-
 const fetchArticles = (
   sort_by = "created_at",
   order = "desc",
@@ -112,6 +102,16 @@ const fetchAllArticlesCount = (topic, author) => {
     .returning("*")
     .then(articles => {
       return articles.length;
+    });
+};
+
+const checkExists = (value, table, column) => {
+  return connection
+    .select("*")
+    .from(table)
+    .where(column, value)
+    .then(rows => {
+      return rows.length !== 0;
     });
 };
 
